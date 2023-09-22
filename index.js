@@ -11,7 +11,7 @@ app.use(express.urlencoded({extended:true}))
 app.use(cors());
 
 //database connection
-mongoose.set("strictQuery", false);
+// mongoose.set("strictQuery", false);
 mongoose.connect(process.env.MONGODB_URL,{
     useNewUrlParser:true,
     useUnifiedTopology:true
