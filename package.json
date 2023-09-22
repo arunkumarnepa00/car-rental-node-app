@@ -9,6 +9,9 @@
   },
   "author": "arun",
   "license": "ISC",
+  "browser": {
+    "fs": false
+  },
   "dependencies": {
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
