@@ -1,4 +1,5 @@
 const {User}=require('../models/User');
+const {Product}=require('../models/Product')
 
 const validateAdmin=async(req,res,next)=>{
 
@@ -29,5 +30,25 @@ const validateAdmin=async(req,res,next)=>{
     }
 }
 
-module.exports={validateAdmin};
+const populateProduct=async(req,res,next)=>{
+ try {
+    await Product.findById(req.params.productId).exec().then((product)=>{
+        req.product=product;
+        next();
+    }).catch((err)=>{
+       console.log("Error: failed in fetching product while updating",err)
+        return res.status(400).json({
+            "err":"Unable to find product"
+        });
+    })
+ } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+        "err":"Internal Error"
+    });
+ }
+
+}
+
+module.exports={validateAdmin,populateProduct};
 

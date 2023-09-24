@@ -50,9 +50,15 @@ const getInfoPC=async(req,res)=>{
 
 const getuserRentals=async(req,res)=>{
   const userId=req.params.userId;
-  console.log(userId)
+  const filter=req.params.filter;
+  //console.log(userId,filter)
+  const date=new Date();
+  console.log(date.getHours())
   try {
-      await Rental.find({user:`${userId}`,paymentStatus:true}).populate('product').exec()
+     if(filter==='upcoming'){
+      await Rental.find({user:`${userId}`,paymentStatus:true,rentalStartDate:{$gte:date.getDate()}})
+      .sort({createdAt:'desc'})
+      .populate('product').exec()
       .then((rentals)=>{
         return res.status(200).json({
               "msg":rentals
@@ -64,6 +70,39 @@ const getuserRentals=async(req,res)=>{
               "err":"Unable to find user rentals details"
           });
         });
+     }
+     if(filter==='completed'){
+      await Rental.find({user:`${userId}`,paymentStatus:true,rentalEndDate:{$lt:date.getDate()}})
+      .sort({createdAt:'desc'})
+      .populate('product').exec()
+      .then((rentals)=>{
+        return res.status(200).json({
+              "msg":rentals
+          });
+        })
+        .catch((err)=>{
+            console.log("Error: failed in fetching user rentals ",err)
+            return res.status(400).json({
+              "err":"Unable to find user rentals details"
+          });
+        });
+     }
+     if(filter==='failed'){
+      await Rental.find({user:`${userId}`,paymentStatus:false})
+      .sort({createdAt:'desc'})
+      .populate('product').exec()
+      .then((rentals)=>{
+        return res.status(200).json({
+              "msg":rentals
+          });
+        })
+        .catch((err)=>{
+            console.log("Error: failed in fetching user rentals ",err)
+            return res.status(400).json({
+              "err":"Unable to find user rentals details"
+          });
+        });
+     }  
    }catch (error) {
     console.log(error);
     res.status(500).json({

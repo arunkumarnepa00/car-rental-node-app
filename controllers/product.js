@@ -21,6 +21,19 @@ const getAllProducts=async(req,res)=>{
  })
 }
 
+const getProductsHome=async(req,res)=>{
+  await Product.find().limit(6).then((data)=>{
+    return res.status(200).json({
+      'msg':data
+    })
+}).catch((err)=>{
+  console.log(err);
+  return res.status(400).json({
+      'err':'unable to find products'
+  })
+})
+}
+
 const getProductSearch=async(req,res)=>{
     console.log(req.query);
     await Product.find({location:req.query.location}).then((data)=>{
@@ -49,9 +62,18 @@ const getProduct=async(req,res)=>{
     })
 }
 
+const getNewDate=(dbDate)=>{
+  const date=new Date(dbDate);
+  return date;
+}
 
 const createOrder=async(req,res)=>{
-  const {totalBill,bill,tax,userId,productId,rentCategory,rentStartDate,rentStartTime,rentDuration} =req.body
+  console.log(req.body)
+  const {totalBill,bill,tax,userId,productId,rentCategory,rentStartDate,rentStartTime,rentDuration}=req.body
+  let rentEndDate= rentCategory==='days'
+  ?(getNewDate(getNewDate(rentStartDate).getTime()+rentDuration*60*60*24*1000))
+  :(rentStartDate);
+  let rentEndTime=rentCategory==='days'?(rentStartTime):(rentStartTime+rentDuration);
 
   //console.log(Number(req.body.amount))
 const instance = new Razorpay({ key_id: process.env.RAZORPAY_CLIENT_ID, key_secret: process.env.RAZORPAY_SECRET })
@@ -72,6 +94,8 @@ instance.orders.create(options)
       dateOfbooking: new Date(),
       rentalStartDate:rentStartDate,
       rentalStartTime:rentStartTime,
+      rentalEndDate:rentEndDate,
+      rentalEndTime:rentEndTime,
       rentalcategory:rentCategory,
       rentalDuration:rentDuration,
       cost:bill,
@@ -116,7 +140,7 @@ const captureOrder=async(req,res)=>{
       const rentalId=await Rental.findOne({orderId:razorpay_order_id}).exec();
       //console.log(rentalId._id);
       await Rental.findByIdAndUpdate(rentalId._id,{paymentStatus:true,paymentId:razorpay_payment_id,paymentSignature:razorpay_signature}).then((updatedrental)=>{
-        return res.redirect(`${process.env.FRONTEND_URL}/user/rentals/${updatedrental._id}`);
+        return res.redirect(`${process.env.FRONTEND_URL}/user/rentals/upcoming/${updatedrental._id}`);
       }).catch((err)=>{
         console.log(err);
         return res.status(400).json({
@@ -134,6 +158,6 @@ const captureOrder=async(req,res)=>{
 }
 
 
-module.exports={getAllProducts,getProductSearch,getProduct,createOrder,captureOrder}
+module.exports={getAllProducts,getProductsHome,getProductSearch,getProduct,createOrder,captureOrder}
 
 

@@ -1,6 +1,5 @@
 
 const mongoose=require('mongoose');
-const Payment=require('./Payment');
 const {ObjectId}=mongoose.Schema;
 
 const rentalSchema=mongoose.Schema({
@@ -26,14 +25,14 @@ const rentalSchema=mongoose.Schema({
             type:Number,
             required:true
         },
-        // rentalEndDate:{
-        //     type:Date,
-        //     required:true
-        // },
-        // rentalEndTime:{
-        //     type:Number,
-        //     required:true
-        // },
+        rentalEndDate:{
+            type:Date,
+            required:true
+        },
+        rentalEndTime:{
+            type:Number,
+            required:true
+        },
         rentalcategory:{
             type:String,
             required:true

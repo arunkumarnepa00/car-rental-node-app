@@ -7,7 +7,7 @@ router.get("/user/getInfo/:userId",getUser);
 router.get("/user/getInfoPC/:userId",getInfoPC);
 
 //user rentals
-router.get("/user/:userId/rentals",getuserRentals);
+router.get("/user/:userId/rentals/:filter",getuserRentals);
 router.get("/rentals/:rentalId",getRental);
 
 

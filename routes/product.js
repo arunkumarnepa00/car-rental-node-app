@@ -1,14 +1,12 @@
 const express=require('express');
 const router=express.Router();
 
-const {getAllProducts,getProductSearch,getProduct,createOrder,captureOrder}=require('../controllers/product');
+const {getAllProducts,getProductSearch,getProduct,createOrder,captureOrder,getProductsHome}=require('../controllers/product');
 
 router.get("/products",getAllProducts);
 router.get("/search/products",getProductSearch);
 router.get("/product/:productId",getProduct);
-
-//paypal
-//router.post("/product/:productId/checkout/createPaypalOrder",productCheckout)
+router.get("/products/home",getProductsHome);
 
 //razorpay
 router.post("/product/:productId/razorpay/checkout",createOrder);
