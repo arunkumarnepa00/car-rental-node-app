@@ -56,7 +56,7 @@ const getuserRentals=async(req,res)=>{
   console.log(date.getHours())
   try {
      if(filter==='upcoming'){
-      await Rental.find({user:`${userId}`,paymentStatus:true,rentalStartDate:{$gte:date.getDate()}})
+      await Rental.find({user:`${userId}`,paymentStatus:true,rentalStartDate:{$gte:date}})
       .sort({createdAt:'desc'})
       .populate('product').exec()
       .then((rentals)=>{
@@ -72,7 +72,7 @@ const getuserRentals=async(req,res)=>{
         });
      }
      if(filter==='completed'){
-      await Rental.find({user:`${userId}`,paymentStatus:true,rentalEndDate:{$lt:date.getDate()}})
+      await Rental.find({user:`${userId}`,paymentStatus:true,rentalEndDate:{$lt:date}})
       .sort({createdAt:'desc'})
       .populate('product').exec()
       .then((rentals)=>{
