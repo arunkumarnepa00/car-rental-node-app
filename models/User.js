@@ -10,6 +10,10 @@ const addressSchema=mongoose.Schema({
     type:String,
     required:true
   },
+  city:{
+    type:String,
+    required:true
+  },
   state:{
     type:String,
     required:true
@@ -60,27 +64,29 @@ const userSchema =mongoose.Schema({
 },{timestamps:true});
 
 
-userSchema.pre('save',async function(next){
+// userSchema.pre('save',async function(next){
+userSchema.methods.hashPassword=
+async function(password){
     try {
-        await bcrypt.hash(this.password,10).then((hash)=>{
-            console.log("user password is hashed:", hash);
-            this.password = hash;
-          }).catch((err)=>{
-            console.log("error during creating hashed password:",err);
-          })
+        const hash=await bcrypt.hash(password,10)
+        console.log("user password is hashed:", hash);
+        return hash;
     } catch (error) {
         console.log(error);
     }
-    next;
-});
+};
 userSchema.methods.comparePassword=
-  async function(enterpassword,hash){
-        await bcrypt.compare(enterpassword, hash).then((result)=>{
-            return true; 
-        }).catch((err)=>{
-            return false;
-        })
+async function(enterpassword,hash){
+    //console.log('hi')
+    try {
+      const result=await bcrypt.compare(enterpassword,hash);
+      console.log('password comparison result:',result);
+      return result
+    } catch (error) {
+      console.log("error while comparing password:",error)
+      return {"err":error} 
     }
+};
 
 const User = mongoose.model("User", userSchema);
 const Address=mongoose.model("Address", addressSchema);

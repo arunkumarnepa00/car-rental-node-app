@@ -31,12 +31,13 @@ const signup=async (req,res)=>{
             });
           }
           //assigning fields
-          if(key!='addresses'){
+          if(key==='addresses'){
+            let address=new Address(JSON.parse(fields[key][0]));
+            //console.log(address)
+            user[key].push(address);
+          }
+          else{
             user[key]=fields[key][0];
-          }else{
-              let address=new Address(JSON.parse(fields[key][0]));
-              //console.log(address)
-              user[key].push(address);
           }
         }
          
@@ -52,8 +53,13 @@ const signup=async (req,res)=>{
             "err":"Error in formdata"
           });
       })
+      //hashing password
+      const hashedPassword=await user.hashPassword(user['password']);
+      console.log(hashedPassword)
+      user['password']=hashedPassword;
       //console.log(user);
-      
+
+
       //checking if user already exists
       const existUser=await User.findOne({email:user.email}).lean();
       //console.log(`user - ${user.email}. already exists:`,existUser);
@@ -88,36 +94,33 @@ const signup=async (req,res)=>{
 
 
 const signin=async (req,res)=>{
-    console.log("request body: ",req.body);
-    const {email,password}=req.body;
-    if(!email || !password){
-        return res.status(400).json({
-            "err":"Email and password required"
-    });
-    }
-
+    //console.log("request body: ",req.body);
     try {
-      await User.findOne({email:`${email}`}).exec().then((user)=>{
-        const loggedin=user.comparePassword(password,user.password);
-        if(loggedin){
-         const token=jwt.sign({_id: user._id}, process.env.TOKEN_SECRET, { expiresIn: '1h' });
-            return res.status(200).json({
-                "msg":"Welcome",
-                "user":user,
-                "token":token
+      const user=req.user;
+      //console.log(user);  
+      // console.log('req.password:',req.body.password)
+      // console.log('user.password:',user.password)
+
+      const loggedin=await user.comparePassword(req.body.password,user.password)
+      //console.log(loggedin);
+      if(loggedin===true){
+        const token=jwt.sign({_id: user._id}, process.env.TOKEN_SECRET, { expiresIn: '1h' });
+          return res.status(200).json({
+                    "msg":"Welcome",
+                    "user":user,
+                    "token":token
+                });
+      }
+      else if(loggedin===false){
+        return res.status(400).json({
+          "err":"Password not matching"
         });
-        }else{
-            return res.status(400).json({
-                "err":"Password not matching"
-        });
-        }
-      })
-      .catch((err)=>{
-          console.log("Error: failed in fetching user for password match - ",err)
-          return res.status(400).json({
-            "err":"Unable to find user details"
-        });
-      });
+      }
+      else{
+          return res.status(500).json({
+            "err": "Internal Error"
+          });
+      }
 
     } catch (error) {
         console.log(error);
@@ -128,6 +131,6 @@ const signin=async (req,res)=>{
 
 }
 const signout=()=>{
-
+  
 }
 module.exports={signup,signin,signout}

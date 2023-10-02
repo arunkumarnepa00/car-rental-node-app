@@ -1,11 +1,13 @@
 const {User}=require('../models/User');
 const {Rental}=require('../models/Rental');
+const {formidable}=require('formidable');
+const fs=require('fs');
 
 const getUser=async (req,res)=>{
 console.log(req.params.userId);
 // res.send("hi");
 try {
-    await User.findOne({_id:`${req.params.userId}`}).exec()
+    await User.findById({_id:`${req.params.userId}`}).exec()
     .then((user)=>{
       return res.status(200).json({
                 "user":user
@@ -27,7 +29,7 @@ try {
 
 const getInfoPC=async(req,res)=>{
   try {
-    await User.findOne({_id:`${req.params.userId}`}).select("firstName lastName email mobile").exec()
+    await User.findById({_id:`${req.params.userId}`}).select("firstName lastName email mobile").exec()
     .then((user)=>{
       console.log(user)
       return res.status(200).json({
@@ -47,6 +49,73 @@ const getInfoPC=async(req,res)=>{
     });
 } 
 }
+
+
+const updateDp=async(req,res)=>{
+  try {
+    const user=req.user;
+    const form=formidable({})
+    await form.parse(req).then((data)=>{
+      // console.log(data)
+      const files=data[1];
+      if(files.dp){
+        user['dp'].data=fs.readFileSync(files.dp[0].filepath);
+        user['dp'].contentType = files.dp[0].mimetype;
+      }
+    })
+    await user.save().then((user)=>{
+       return res.status(200).json({
+        "msg":"User Dp is updated"
+       })
+    }).catch((err)=>{
+      console.log(err);
+      return res.status(400).json({
+        "err":"Failed in updating Dp"
+       })
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      "err":"Internal Error"
+    });
+  }
+}
+
+const updateUserDetails=async(req,res)=>{
+  try {
+    const user=req.user;
+    const details=req.body;
+    console.log(JSON.stringify(details))
+    for(i in details){
+     if(i==='addresses'){
+       for(j in details[i]){
+           user[i][0][j]=details[i][j]
+       }
+     }else{
+      user[i]=details[i]
+     }
+    }
+    await user.save().then((user)=>{
+      //console.log(user)
+      return res.status(200).json({
+        "user":user,
+        "msg":"user details updated"
+      })
+   }).catch((err)=>{
+     console.log(err);
+     return res.status(400).json({
+       "err":"Failed in updating user details"
+      })
+   })
+    
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      "err":"Internal Error"
+    });
+  }
+}
+
 
 const getuserRentals=async(req,res)=>{
   const userId=req.params.userId;
@@ -134,4 +203,4 @@ const getRental=async(req,res)=>{
    }
 }
 
-module.exports={getUser,getuserRentals,getRental,getInfoPC}
+module.exports={getUser,getuserRentals,getRental,getInfoPC,updateDp,updateUserDetails}
