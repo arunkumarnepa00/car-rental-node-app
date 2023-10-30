@@ -203,4 +203,26 @@ const getRental=async(req,res)=>{
    }
 }
 
-module.exports={getUser,getuserRentals,getRental,getInfoPC,updateDp,updateUserDetails}
+const getAllUsers=async(req,res)=>{
+    try {
+      await User.find().exec()
+      .then((users)=>{
+        return res.status(200).json({
+              "msg":users
+          });
+        })
+        .catch((err)=>{
+            console.log("Error: failed in fetching users:",err)
+            return res.status(400).json({
+              "err":"Unable to find users"
+          });
+        });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+          "err":"Internal Error"
+      });
+    }
+}
+
+module.exports={getUser,getuserRentals,getRental,getInfoPC,updateDp,updateUserDetails,getAllUsers}
