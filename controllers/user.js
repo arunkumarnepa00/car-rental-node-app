@@ -225,4 +225,58 @@ const getAllUsers=async(req,res)=>{
     }
 }
 
-module.exports={getUser,getuserRentals,getRental,getInfoPC,updateDp,updateUserDetails,getAllUsers}
+const getSearchUsers=async(req,res)=>{
+  const str2=req.params.searchStr;
+  //console.log(str2);
+  //const str2='arun'
+  try {
+    await User.find({$or:[
+      {firstName:{$regex:`${str2}.*`,$options: 'i'}},{lastName:{$regex:`${str2}.*`,$options: 'i'}},
+      {email:{$regex:`${str2}`,$options:'i'}}
+    ]})
+    //.select("firstName lastName email")
+    .exec()
+    .then((users)=>{
+      //console.log(users)
+      return res.status(200).json({
+            "msg":users
+        });
+      })
+      .catch((err)=>{
+          console.log("Error: failed in fetching users:",err)
+          return res.status(400).json({
+            "err":"Unable to find users"
+        });
+      });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+        "err":"Internal Error"
+    });
+  }
+}
+
+const getAllRentalBookings=async(req,res)=>{
+ 
+  try {
+   await Rental.find().populate('user').select('orderId user paymentStatus').exec()
+   .then((rentals)=>{
+     return res.status(200).json({
+           "msg":rentals
+       });
+     })
+     .catch((err)=>{
+         console.log("Error: failed in fetching rentals",err)
+         return res.status(400).json({
+           "err":"Unable to find rental details"
+       });
+     });
+  } catch (error) {
+   console.log(error);
+   res.status(500).json({
+       "err":"Internal Error"
+   });
+  }
+}
+
+module.exports={getUser,getuserRentals,getRental,getInfoPC,updateDp,updateUserDetails,getAllUsers,getSearchUsers,getAllRentalBookings}

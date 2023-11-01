@@ -79,7 +79,7 @@ const createOrder=async(req,res)=>{
 const instance = new Razorpay({ key_id: process.env.RAZORPAY_CLIENT_ID, key_secret: process.env.RAZORPAY_SECRET })
 const receiptId=uuidv4();
 const options={
-  amount:parseInt(totalBill),
+  amount:parseInt(totalBill*100),
   currency: "INR",
   receipt: receiptId
 }
@@ -114,7 +114,6 @@ instance.orders.create(options)
         "err":"Internal error saving order"
      })
     })
-    
   }else{
     res.status(400).json({
       "err":"receipt not matching"
@@ -146,7 +145,6 @@ const captureOrder=async(req,res)=>{
         return res.status(400).json({
           "err":"Payment update failed"
          })
-
       })
    }
    else{
