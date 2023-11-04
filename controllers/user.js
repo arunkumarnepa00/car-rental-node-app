@@ -126,8 +126,9 @@ const getuserRentals=async(req,res)=>{
   try {
      if(filter==='upcoming'){
       await Rental.find({user:`${userId}`,paymentStatus:true,rentalStartDate:{$gte:date}})
+      .select('dateOfbooking totalCost')
       .sort({createdAt:'desc'})
-      .populate('product').exec()
+      .populate('product','productPoster').exec()
       .then((rentals)=>{
         return res.status(200).json({
               "msg":rentals
@@ -142,8 +143,9 @@ const getuserRentals=async(req,res)=>{
      }
      if(filter==='completed'){
       await Rental.find({user:`${userId}`,paymentStatus:true,rentalEndDate:{$lt:date}})
+      .select('dateOfbooking totalCost')
       .sort({createdAt:'desc'})
-      .populate('product').exec()
+      .populate('product','productPoster').exec()
       .then((rentals)=>{
         return res.status(200).json({
               "msg":rentals
@@ -158,8 +160,9 @@ const getuserRentals=async(req,res)=>{
      }
      if(filter==='failed'){
       await Rental.find({user:`${userId}`,paymentStatus:false})
+      .select('dateOfbooking totalCost')
       .sort({createdAt:'desc'})
-      .populate('product').exec()
+      .populate('product','productPoster').exec()
       .then((rentals)=>{
         return res.status(200).json({
               "msg":rentals
@@ -203,9 +206,12 @@ const getRental=async(req,res)=>{
    }
 }
 
+//admin service
 const getAllUsers=async(req,res)=>{
     try {
-      await User.find().exec()
+      await User.find()
+      .select('firstName lastName email dp role')
+      .exec()
       .then((users)=>{
         return res.status(200).json({
               "msg":users
@@ -225,6 +231,7 @@ const getAllUsers=async(req,res)=>{
     }
 }
 
+//admin service
 const getSearchUsers=async(req,res)=>{
   const str2=req.params.searchStr;
   //console.log(str2);
@@ -234,7 +241,7 @@ const getSearchUsers=async(req,res)=>{
       {firstName:{$regex:`${str2}.*`,$options: 'i'}},{lastName:{$regex:`${str2}.*`,$options: 'i'}},
       {email:{$regex:`${str2}`,$options:'i'}}
     ]})
-    //.select("firstName lastName email")
+    .select('firstName lastName email dp role')
     .exec()
     .then((users)=>{
       //console.log(users)
@@ -256,10 +263,13 @@ const getSearchUsers=async(req,res)=>{
   }
 }
 
+//admin service
 const getAllRentalBookings=async(req,res)=>{
  
   try {
-   await Rental.find().populate('user','email').select('orderId user paymentStatus').exec()
+   await Rental.find()
+   .populate('user','email')
+   .select('orderId user paymentStatus').exec()
    .then((rentals)=>{
    
      //console.log(rentals) 

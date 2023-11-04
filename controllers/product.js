@@ -9,7 +9,9 @@ const {Rental} = require('../models/Rental');
 
 const getAllProducts=async(req,res)=>{  
 
- await Product.find().then((data)=>{
+ await Product.find()
+ .select('title mileage age location pricePerDay productPoster')
+ .then((data)=>{
       return res.status(200).json({
         'msg':data
       })
@@ -22,7 +24,10 @@ const getAllProducts=async(req,res)=>{
 }
 
 const getProductsHome=async(req,res)=>{
-  await Product.find().limit(6).then((data)=>{
+  await Product.find()
+  .select('title mileage age location pricePerDay productPoster')
+  .limit(4)
+  .then((data)=>{
     return res.status(200).json({
       'msg':data
     })
@@ -36,7 +41,9 @@ const getProductsHome=async(req,res)=>{
 
 const getProductSearch=async(req,res)=>{
     console.log(req.query);
-    await Product.find({location:req.query.location}).then((data)=>{
+    await Product.find({location:req.query.location})
+    .select('title mileage age location pricePerDay productPoster')
+    .then((data)=>{
       return res.status(200).json({
         'msg':data
       })
@@ -50,7 +57,8 @@ const getProductSearch=async(req,res)=>{
 }
 
 const getProduct=async(req,res)=>{
-  await Product.findById({_id:req.params.productId}).then((data)=>{
+  await Product.findById({_id:req.params.productId})
+  .then((data)=>{
     return res.status(200).json({
       'msg':data
     })
@@ -137,6 +145,7 @@ const captureOrder=async(req,res)=>{
    console.log('payment validation:',validate);
    if(validate){
       const rentalId=await Rental.findOne({orderId:razorpay_order_id}).exec();
+      
       //console.log(rentalId._id);
       await Rental.findByIdAndUpdate(rentalId._id,{paymentStatus:true,paymentId:razorpay_payment_id,paymentSignature:razorpay_signature}).then((updatedrental)=>{
         return res.redirect(`${process.env.FRONTEND_URL}/user/rentals/upcoming/${updatedrental._id}`);
