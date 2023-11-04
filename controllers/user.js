@@ -259,8 +259,10 @@ const getSearchUsers=async(req,res)=>{
 const getAllRentalBookings=async(req,res)=>{
  
   try {
-   await Rental.find().populate('user').select('orderId user paymentStatus').exec()
+   await Rental.find().populate('user','email').select('orderId user paymentStatus').exec()
    .then((rentals)=>{
+   
+     //console.log(rentals) 
      return res.status(200).json({
            "msg":rentals
        });
